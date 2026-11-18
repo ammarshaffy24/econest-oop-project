@@ -1,0 +1,24 @@
+erDiagram
+  CLIENT ||--o{ ORDERS : places
+  DELIVERY_AGENT |o--o{ ORDERS : "delivers"
+  CLIENT {
+    int client_id PK
+    varchar name
+    varchar client_type "Household or Office"
+    varchar phone
+    varchar email
+    varchar address
+  }
+  DELIVERY_AGENT {
+    int agent_id PK
+    varchar name
+    varchar phone
+    varchar email
+    varchar vehicle_type
+    varchar vehicle_no
+  }
+  ORDERS {
+    int order_id PK
+    int client_id FK
+    int agent_id FK "assigned in Task 6"
+  }
