@@ -3,6 +3,7 @@ import ui.DeliveryAgentPanel;
 import ui.LoginPanel;
 import ui.MainMenuPanel;
 import ui.ProductPanel;
+import ui.StockPanel;
 
 import javax.swing.*;
 
@@ -12,6 +13,7 @@ public class Main {
     private static JFrame productsFrame;
     private static JFrame clientsFrame;
     private static JFrame deliveryAgentsFrame;
+    private static JFrame stockFrame;
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
@@ -40,10 +42,11 @@ public class Main {
     private static void showMainMenu(String username) {
         JFrame menuFrame = new JFrame("EcoNest Manager 1.0");
         menuFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        menuFrame.setContentPane(new MainMenuPanel(username, Main::showProducts, Main::showClients, Main::showDeliveryAgents, () -> {
+        menuFrame.setContentPane(new MainMenuPanel(username, Main::showProducts, Main::showClients, Main::showStock, Main::showDeliveryAgents, () -> {
             closeProducts();
             closeWindow(clientsFrame);
             closeWindow(deliveryAgentsFrame);
+            closeWindow(stockFrame);
             menuFrame.dispose();
             showLogin();
         }));
@@ -67,6 +70,10 @@ public class Main {
 
     private static void showClients() {
         clientsFrame = openWindow(clientsFrame, "EcoNest - Clients", ClientPanel::new);
+    }
+
+    private static void showStock() {
+        stockFrame = openWindow(stockFrame, "EcoNest - Stock", StockPanel::new);
     }
 
     private static void showDeliveryAgents() {

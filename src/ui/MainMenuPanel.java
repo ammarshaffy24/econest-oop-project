@@ -17,13 +17,15 @@ public class MainMenuPanel extends JPanel {
 
     private final Runnable onOpenProducts;
     private final Runnable onOpenClients;
+    private final Runnable onOpenStock;
     private final Runnable onOpenDeliveryAgents;
     private final Runnable onLogout;
 
-    public MainMenuPanel(String username, Runnable onOpenProducts, Runnable onOpenClients,
+    public MainMenuPanel(String username, Runnable onOpenProducts, Runnable onOpenClients, Runnable onOpenStock,
                          Runnable onOpenDeliveryAgents, Runnable onLogout) {
         this.onOpenProducts = onOpenProducts;
         this.onOpenClients = onOpenClients;
+        this.onOpenStock = onOpenStock;
         this.onOpenDeliveryAgents = onOpenDeliveryAgents;
         this.onLogout = onLogout;
 
@@ -65,7 +67,7 @@ public class MainMenuPanel extends JPanel {
 
         tiles.add(tile("Products", "Task 1 · Catalogue", onOpenProducts));
         tiles.add(tile("Clients", "Task 2 · Household / Office", onOpenClients));
-        tiles.add(notBuiltTile("Stock", "Task 3 · Inventory"));
+        tiles.add(tile("Stock", "Task 3 · Inventory", onOpenStock));
         tiles.add(tile("Delivery Agents", "Task 4 · Staff & vehicles", onOpenDeliveryAgents));
         tiles.add(notBuiltTile("Orders", "Task 5 · Process orders"));
         tiles.add(notBuiltTile("Assign Delivery", "Task 6 · Schedule & track"));

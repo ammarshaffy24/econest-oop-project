@@ -1,6 +1,8 @@
 out/
 .idea/
 *.iml
+*.class
 products.txt
 users.txt
+stock.txt
 data/
