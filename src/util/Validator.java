@@ -1,4 +1,4 @@
-package econest.util;
+package util;
 
 // Returns an error message, or null if everything is valid
 public class Validator {

@@ -16,10 +16,15 @@ public class MainMenuPanel extends JPanel {
     private static final int PADDING = 16;
 
     private final Runnable onOpenProducts;
+    private final Runnable onOpenClients;
+    private final Runnable onOpenDeliveryAgents;
     private final Runnable onLogout;
 
-    public MainMenuPanel(String username, Runnable onOpenProducts, Runnable onLogout) {
+    public MainMenuPanel(String username, Runnable onOpenProducts, Runnable onOpenClients,
+                         Runnable onOpenDeliveryAgents, Runnable onLogout) {
         this.onOpenProducts = onOpenProducts;
+        this.onOpenClients = onOpenClients;
+        this.onOpenDeliveryAgents = onOpenDeliveryAgents;
         this.onLogout = onLogout;
 
         setLayout(new BorderLayout());
@@ -59,9 +64,9 @@ public class MainMenuPanel extends JPanel {
         tiles.setBorder(BorderFactory.createEmptyBorder(PADDING, PADDING, PADDING, PADDING));
 
         tiles.add(tile("Products", "Task 1 · Catalogue", onOpenProducts));
-        tiles.add(notBuiltTile("Clients", "Task 2 · Household / Office"));
+        tiles.add(tile("Clients", "Task 2 · Household / Office", onOpenClients));
         tiles.add(notBuiltTile("Stock", "Task 3 · Inventory"));
-        tiles.add(notBuiltTile("Delivery Agents", "Task 4 · Staff & vehicles"));
+        tiles.add(tile("Delivery Agents", "Task 4 · Staff & vehicles", onOpenDeliveryAgents));
         tiles.add(notBuiltTile("Orders", "Task 5 · Process orders"));
         tiles.add(notBuiltTile("Assign Delivery", "Task 6 · Schedule & track"));
         tiles.add(notBuiltTile("Reports", "Task 7 · Monthly sales & stock"));

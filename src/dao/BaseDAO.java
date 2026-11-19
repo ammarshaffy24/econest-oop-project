@@ -1,6 +1,6 @@
-package econest.dao;
+package dao;
 
-import econest.model.Person;
+import model.Person;
 import java.io.*;
 import java.util.*;
 

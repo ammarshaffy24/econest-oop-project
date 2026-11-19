@@ -3,3 +3,4 @@ out/
 *.iml
 products.txt
 users.txt
+data/

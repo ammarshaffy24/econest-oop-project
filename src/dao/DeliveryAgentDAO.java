@@ -1,6 +1,6 @@
-package econest.dao;
+package dao;
 
-import econest.model.DeliveryAgent;
+import model.DeliveryAgent;
 
 public class DeliveryAgentDAO extends BaseDAO<DeliveryAgent> {
     public DeliveryAgentDAO() { super("agents.txt"); }

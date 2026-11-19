@@ -1,4 +1,4 @@
-package econest.model;
+package model;
 
 // Task 4: a delivery person and their vehicle
 public class DeliveryAgent extends Person {

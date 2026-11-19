@@ -1,8 +1,8 @@
-package econest.ui;
+package ui;
 
-import econest.dao.ClientDAO;
-import econest.model.Client;
-import econest.util.Validator;
+import dao.ClientDAO;
+import model.Client;
+import util.Validator;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;

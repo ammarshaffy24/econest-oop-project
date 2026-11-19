@@ -1,4 +1,4 @@
-package econest.model;
+package model;
 
 // Task 2: a household or office client
 public class Client extends Person {

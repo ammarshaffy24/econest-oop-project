@@ -1,6 +1,6 @@
-package econest.dao;
+package dao;
 
-import econest.model.Client;
+import model.Client;
 
 public class ClientDAO extends BaseDAO<Client> {
     public ClientDAO() { super("clients.txt"); }

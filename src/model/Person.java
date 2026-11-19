@@ -1,4 +1,4 @@
-package econest.model;
+package model;
 
 // Parent class: what a Client and a DeliveryAgent have in common
 public abstract class Person {

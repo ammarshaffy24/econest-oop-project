@@ -1,8 +1,8 @@
-package econest.ui;
+package ui;
 
-import econest.dao.DeliveryAgentDAO;
-import econest.model.DeliveryAgent;
-import econest.util.Validator;
+import dao.DeliveryAgentDAO;
+import model.DeliveryAgent;
+import util.Validator;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
