@@ -123,3 +123,15 @@ git push
 > To push to this repo you need to be added as a collaborator. Send your GitHub username to me(Ammar)!
 
 ---
+---
+
+## 7. Run the app
+
+From the project folder:
+
+```bash
+javac -d out $(find src -name "*.java")
+java -cp out Main
+```
+
+Log in with `admin` / `admin123`.
