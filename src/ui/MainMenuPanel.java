@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Map;
 
 public class MainMenuPanel extends JPanel {
 
@@ -15,18 +16,12 @@ public class MainMenuPanel extends JPanel {
     private static final int TILE_GAP = 12;
     private static final int PADDING = 16;
 
-    private final Runnable onOpenProducts;
-    private final Runnable onOpenClients;
-    private final Runnable onOpenStock;
-    private final Runnable onOpenDeliveryAgents;
+    private final Map<String, Runnable> sections;
     private final Runnable onLogout;
 
-    public MainMenuPanel(String username, Runnable onOpenProducts, Runnable onOpenClients, Runnable onOpenStock,
-                         Runnable onOpenDeliveryAgents, Runnable onLogout) {
-        this.onOpenProducts = onOpenProducts;
-        this.onOpenClients = onOpenClients;
-        this.onOpenStock = onOpenStock;
-        this.onOpenDeliveryAgents = onOpenDeliveryAgents;
+    // sections: tile title -> action that opens that screen
+    public MainMenuPanel(String username, Map<String, Runnable> sections, Runnable onLogout) {
+        this.sections = sections;
         this.onLogout = onLogout;
 
         setLayout(new BorderLayout());
@@ -65,14 +60,14 @@ public class MainMenuPanel extends JPanel {
         tiles.setOpaque(false);
         tiles.setBorder(BorderFactory.createEmptyBorder(PADDING, PADDING, PADDING, PADDING));
 
-        tiles.add(tile("Products", "Task 1 · Catalogue", onOpenProducts));
-        tiles.add(tile("Clients", "Task 2 · Household / Office", onOpenClients));
-        tiles.add(tile("Stock", "Task 3 · Inventory", onOpenStock));
-        tiles.add(tile("Delivery Agents", "Task 4 · Staff & vehicles", onOpenDeliveryAgents));
-        tiles.add(notBuiltTile("Orders", "Task 5 · Process orders"));
-        tiles.add(notBuiltTile("Assign Delivery", "Task 6 · Schedule & track"));
-        tiles.add(notBuiltTile("Reports", "Task 7 · Monthly sales & stock"));
-        tiles.add(notBuiltTile("Email Log", "Tasks 8 & 9 · Notifications"));
+        tiles.add(section("Products", "Task 1 · Catalogue"));
+        tiles.add(section("Clients", "Task 2 · Household / Office"));
+        tiles.add(section("Stock", "Task 3 · Inventory"));
+        tiles.add(section("Delivery Agents", "Task 4 · Staff & vehicles"));
+        tiles.add(section("Orders", "Task 5 · Process orders"));
+        tiles.add(section("Assign Delivery", "Task 6 · Schedule & track"));
+        tiles.add(section("Reports", "Task 7 · Monthly sales & stock"));
+        tiles.add(section("Email Log", "Tasks 8 & 9 · Notifications"));
         tiles.add(tile("Exit", "Close application", () -> System.exit(0)));
         return tiles;
     }
@@ -85,9 +80,8 @@ public class MainMenuPanel extends JPanel {
         return button;
     }
 
-    private JButton notBuiltTile(String title, String subtitle) {
-        return tile(title, subtitle, () -> JOptionPane.showMessageDialog(this,
-                title + " is not built yet.", title, JOptionPane.INFORMATION_MESSAGE));
+    private JButton section(String title, String subtitle) {
+        return tile(title, subtitle, sections.get(title));
     }
 
     private JPanel buildStatusBar() {

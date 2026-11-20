@@ -1,143 +1,86 @@
-import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+package dao;
+
+import model.Order;
+import model.OrderItem;
+
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
+// Saves orders to data/orders.txt   (id|clientId|orderDate|deliveryFee|agentId|deliveryDate|status)
+// and their items to data/order_items.txt   (orderId|productId|productName|quantity|unitPrice)
 public class OrderDAO {
+    private final List<Order> list = new ArrayList<>();
+    private final File ordersFile = new File("data", "orders.txt");
+    private final File itemsFile = new File("data", "order_items.txt");
 
-    public List<Client> getAllClients() throws SQLException {
-        List<Client> list = new ArrayList<>();
-        String sql = "SELECT client_id, name, client_type FROM clients ORDER BY name";
-        try (Connection conn = DBConnection.getConnection();
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
-            while (rs.next()) {
-                list.add(new Client(
-                    rs.getInt("client_id"),
-                    rs.getString("name"),
-                    rs.getString("client_type")
-                ));
-            }
-        }
-        return list;
+    public OrderDAO() {
+        loadOrders();
+        loadItems();
     }
 
-    public List<Product> getAllProducts() throws SQLException {
-        List<Product> list = new ArrayList<>();
-        String sql = "SELECT product_id, name, category, unit_price, eco_rating FROM products ORDER BY name";
-        try (Connection conn = DBConnection.getConnection();
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
-            while (rs.next()) {
-                list.add(new Product(
-                    rs.getInt("product_id"),
-                    rs.getString("name"),
-                    rs.getString("category"),
-                    rs.getBigDecimal("unit_price"),
-                    rs.getInt("eco_rating")
-                ));
-            }
-        }
-        return list;
+    public List<Order> getAll() { return list; }
+
+    public Order findById(int id) {
+        for (Order o : list) if (o.getId() == id) return o;
+        return null;
     }
 
-    public String generateNextOrderCode() throws SQLException {
-        String sql = "SELECT COALESCE(MAX(order_id), 0) + 1 AS next_id FROM orders";
-        try (Connection conn = DBConnection.getConnection();
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
-            if (rs.next()) {
-                int nextNum = rs.getInt("next_id");
-                return String.format("ORD-%03d", nextNum);
-            }
-        }
-        return "ORD-001";
+    public void add(Order order) {
+        order.setId(list.stream().mapToInt(Order::getId).max().orElse(0) + 1);
+        list.add(order);
+        save();
     }
 
-    public int getAvailableStock(int productId) throws SQLException {
-        String sql = "SELECT quantity_on_hand FROM inventory WHERE product_id = ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, productId);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt("quantity_on_hand");
-                }
-            }
-        }
-        return 0;
+    public int nextId() {
+        return list.stream().mapToInt(Order::getId).max().orElse(0) + 1;
     }
 
-    public boolean saveOrder(Order order) throws SQLException {
-        String insertOrderSql = "INSERT INTO orders (client_id, order_date, total_amount, status) VALUES (?, ?, ?, ?)";
-        String insertItemSql = "INSERT INTO order_items (order_id, product_id, quantity, unit_price, line_total) VALUES (?, ?, ?, ?, ?)";
-        String updateStockSql = "UPDATE inventory SET quantity_on_hand = quantity_on_hand - ? WHERE product_id = ? AND quantity_on_hand >= ?";
-
-        Connection conn = null;
-        try {
-            conn = DBConnection.getConnection();
-            conn.setAutoCommit(false);
-
-            int generatedOrderId;
-            try (PreparedStatement psOrder = conn.prepareStatement(insertOrderSql, Statement.RETURN_GENERATED_KEYS)) {
-                psOrder.setInt(1, order.getClient().getId());
-                psOrder.setDate(2, Date.valueOf(order.getOrderDate()));
-                psOrder.setBigDecimal(3, order.getTotalAmount());
-                psOrder.setString(4, order.getStatus());
-                psOrder.executeUpdate();
-
-                try (ResultSet keys = psOrder.getGeneratedKeys()) {
-                    if (!keys.next()) {
-                        throw new SQLException("Failed to retrieve generated order ID.");
-                    }
-                    generatedOrderId = keys.getInt(1);
-                }
+    public void save() {
+        ordersFile.getParentFile().mkdirs();
+        try (PrintWriter orders = new PrintWriter(ordersFile); PrintWriter items = new PrintWriter(itemsFile)) {
+            for (Order o : list) {
+                orders.println(o.getId() + "|" + o.getClientId() + "|" + o.getOrderDate() + "|" + o.getDeliveryFee()
+                        + "|" + o.getAgentId() + "|" + o.getDeliveryDate() + "|" + o.getStatus());
+                for (OrderItem i : o.getItems())
+                    items.println(o.getId() + "|" + i.getProductId() + "|" + clean(i.getProductName()) + "|"
+                            + i.getQuantity() + "|" + i.getUnitPrice());
             }
-
-            try (PreparedStatement psItem = conn.prepareStatement(insertItemSql);
-                 PreparedStatement psStock = conn.prepareStatement(updateStockSql)) {
-
-                for (OrderItem item : order.getItems()) {
-                    int prodId = item.getProduct().getId();
-                    int qty = item.getQuantity();
-                    BigDecimal unitPrice = item.getUnitPrice();
-                    BigDecimal lineTotal = item.getLineTotal();
-
-                    psStock.setInt(1, qty);
-                    psStock.setInt(2, prodId);
-                    psStock.setInt(3, qty);
-                    int updatedRows = psStock.executeUpdate();
-                    if (updatedRows == 0) {
-                        throw new SQLException("Insufficient stock for: " + item.getProduct().getName());
-                    }
-
-                    psItem.setInt(1, generatedOrderId);
-                    psItem.setInt(2, prodId);
-                    psItem.setInt(3, qty);
-                    psItem.setBigDecimal(4, unitPrice);
-                    psItem.setBigDecimal(5, lineTotal);
-                    psItem.addBatch();
-                }
-                psItem.executeBatch();
-            }
-
-            conn.commit();
-            return true;
-        } catch (SQLException ex) {
-            if (conn != null) {
-                conn.rollback();
-            }
-            throw ex;
-        } finally {
-            if (conn != null) {
-                conn.setAutoCommit(true);
-                conn.close();
-            }
+        } catch (IOException e) {
+            System.err.println("Could not write orders: " + e.getMessage());
         }
+    }
+
+    private void loadOrders() {
+        for (String[] p : readLines(ordersFile)) {
+            Order o = new Order(Integer.parseInt(p[0]), Integer.parseInt(p[1]), p[2], Double.parseDouble(p[3]));
+            o.setDelivery(Integer.parseInt(p[4]), p[5], p[6]);
+            list.add(o);
+        }
+    }
+
+    private void loadItems() {
+        for (String[] p : readLines(itemsFile)) {
+            Order o = findById(Integer.parseInt(p[0]));
+            if (o != null)
+                o.addItem(new OrderItem(p[1], p[2], Integer.parseInt(p[3]), Double.parseDouble(p[4])));
+        }
+    }
+
+    private List<String[]> readLines(File file) {
+        List<String[]> rows = new ArrayList<>();
+        if (!file.exists()) return rows;
+        try (BufferedReader r = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = r.readLine()) != null)
+                if (!line.isEmpty()) rows.add(line.split("\\|", -1));
+        } catch (IOException e) {
+            System.err.println("Could not read " + file + ": " + e.getMessage());
+        }
+        return rows;
+    }
+
+    private static String clean(String s) {
+        return s.replace("|", "/");
     }
 }
