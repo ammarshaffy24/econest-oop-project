@@ -1,5 +1,7 @@
 # EcoNest
 
+# [github.com/ammarshaffy24/econest-oop-project](https://github.com/ammarshaffy24/econest-oop-project)
+
 Setup guide for the EcoNest project. Follow these steps to make a GitHub account, connect it to VS Code, and get this repo on your computer.
 
 ---
