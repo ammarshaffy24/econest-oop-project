@@ -130,8 +130,29 @@ git push
 From the project folder:
 
 ```bash
-javac -d out $(find src -name "*.java")
+javac -encoding UTF-8 -d out $(find src -name "*.java")
 java -cp out Main
 ```
 
 Log in with `admin` / `admin123`.
+
+---
+
+## 8. What each screen does
+
+| Menu tile | Task | Saves to |
+|-----------|------|----------|
+| Products | 1 · add / update / remove plants, planters, kits | `products.txt` |
+| Clients | 2 · household and office clients | `data/clients.txt` |
+| Stock | 3 · quantity on hand, reorder levels, stock-in | `stock.txt` |
+| Delivery Agents | 4 · agents and their vehicles | `data/agents.txt` |
+| Orders | 5 · create an order, add items, total = items + LKR 500 delivery; placing it reduces stock | `data/orders.txt`, `data/order_items.txt` |
+| Assign Delivery | 6 · assign an agent and date, move status Pending → Assigned → Dispatched → Delivered | `data/orders.txt` |
+| Reports | 7 · monthly revenue, orders, items sold, top products, low-stock alerts; export to `.txt` | — |
+| Email Log | 8 & 9 · emails sent to agents on assign and to clients on dispatch | `data/emails.txt` |
+
+Emails are **simulated**: they are saved to `data/emails.txt` and shown on the Email Log screen instead of being sent over the internet, so no mail library or password is needed.
+
+A product only appears as "in stock" for orders after the Stock screen has given it a quantity (Stock → Stock In).
+
+ER diagrams for each task are in [`diagrams/er/`](diagrams/er/README.md).
