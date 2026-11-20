@@ -6,3 +6,5 @@ products.txt
 users.txt
 stock.txt
 data/
+
+config.properties
