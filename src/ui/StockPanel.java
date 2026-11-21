@@ -12,10 +12,12 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Task 3 - Manage Stock / Inventory.
+ * Shows quantity on hand, reorder level, supplier and low-stock status.
+ */
 public class StockPanel extends JPanel {
 
-    private final ProductDAO productDao = new ProductDAO();
     private final StockDAO stockDao = new StockDAO();
 
     // table
@@ -194,6 +196,11 @@ public class StockPanel extends JPanel {
 
     // ================= data =================
 
+    /**
+     * Re-reads products from Task 1, creates stock records for new products,
+     * removes records for deleted products, and redraws the table.
+     * Call this whenever the Stock tab is opened.
+     */
     public void refresh() {
         List<Product> products = loadProducts();
 
@@ -220,9 +227,12 @@ public class StockPanel extends JPanel {
         reloadTable();
     }
 
-
+    /**
+     * ONE PLACE that depends on your Task 1 code.
+     * If your ProductDAO method is not called getAll(), change it here.
+     */
     private List<Product> loadProducts() {
-        return productDao.getAll();
+        return new ProductDAO().getAll();   // re-reads products.txt every time
     }
 
     private void reloadTable() {
