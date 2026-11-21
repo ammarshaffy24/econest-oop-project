@@ -2,6 +2,7 @@ package service;
 
 import model.Client;
 import model.DeliveryAgent;
+import model.Email;
 import model.Order;
 
 // Task 8: emails a client when their order has been dispatched
@@ -12,7 +13,7 @@ public class DispatchNotifier {
         this.emailService = emailService;
     }
 
-    public void notifyClient(Client client, DeliveryAgent agent, Order order) {
+    public Email notifyClient(Client client, DeliveryAgent agent, Order order) {
         String subject = "Your EcoNest order " + order.getCode() + " has been dispatched";
         String body = "Hello " + client.getName() + ",\n\n"
                 + "Good news! Your order is on its way.\n\n"
@@ -25,6 +26,6 @@ public class DispatchNotifier {
                 + "Thank you for shopping sustainably with EcoNest.\n\n"
                 + "Regards,\nEcoNest";
 
-        emailService.send(order.getId(), client.getEmail(), subject, body);
+        return emailService.send(order.getId(), client.getEmail(), subject, body);
     }
 }

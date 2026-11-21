@@ -15,15 +15,17 @@ public class EmailService {
     private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     private static final String NEW_LINE_MARK = "\\n";
 
-    public void send(int orderId, String to, String subject, String body) {
+    public Email send(int orderId, String to, String subject, String body) {
         if (to == null || to.isBlank()) throw new IllegalArgumentException("Recipient has no email address.");
+        Email email = new Email(LocalDateTime.now().format(TIME), orderId, to, subject, body);
         FILE.getParentFile().mkdirs();
         try (PrintWriter w = new PrintWriter(new FileWriter(FILE, true))) {
-            w.println(LocalDateTime.now().format(TIME) + "|" + orderId + "|" + clean(to) + "|" + clean(subject)
+            w.println(email.getSentAt() + "|" + orderId + "|" + clean(to) + "|" + clean(subject)
                     + "|" + clean(body).replace("\n", NEW_LINE_MARK));
         } catch (IOException e) {
             throw new IllegalStateException("Could not save email to " + FILE + ": " + e.getMessage(), e);
         }
+        return email;
     }
 
     public List<Email> getAll() {

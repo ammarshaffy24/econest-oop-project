@@ -1,6 +1,7 @@
 package service;
 
 import model.Client;
+import model.Email;
 import model.DeliveryAgent;
 import model.Order;
 import model.OrderItem;
@@ -13,7 +14,7 @@ public class DeliveryNotifier {
         this.emailService = emailService;
     }
 
-    public void notifyAgent(DeliveryAgent agent, Client client, Order order) {
+    public Email notifyAgent(DeliveryAgent agent, Client client, Order order) {
         String subject = "New Delivery Assigned - Order " + order.getCode();
         String body = "Hello " + agent.getName() + ",\n\n"
                 + "A new delivery has been assigned to you.\n\n"
@@ -27,7 +28,7 @@ public class DeliveryNotifier {
                 + "Please confirm once the delivery is completed.\n\n"
                 + "Regards,\nEcoNest";
 
-        emailService.send(order.getId(), agent.getEmail(), subject, body);
+        return emailService.send(order.getId(), agent.getEmail(), subject, body);
     }
 
     static String itemSummary(Order order) {

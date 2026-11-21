@@ -57,7 +57,7 @@ public class Main {
                 openWindow("EcoNest - Delivery Agents", DeliveryAgentPanel::new, SMALL_WIDTH, SMALL_HEIGHT));
         sections.put("Orders", () -> openWindow("EcoNest - Process Client Order", ProcessOrderPanel::new, WIDE_WIDTH, 460));
         sections.put("Assign Delivery", () ->
-                openWindow("EcoNest - Assign Delivery", AssignDeliveryPanel::new, WIDE_WIDTH, 420));
+                openWindow("EcoNest - Assign Delivery", AssignDeliveryPanel::new, WIDE_WIDTH, 580));
         sections.put("Reports", () -> openWindow("EcoNest - Monthly Reports", ReportsPanel::new, WIDE_WIDTH, 470));
         sections.put("Email Log", () -> openWindow("EcoNest - Email Log", EmailLogPanel::new, SMALL_WIDTH, SMALL_HEIGHT));
 

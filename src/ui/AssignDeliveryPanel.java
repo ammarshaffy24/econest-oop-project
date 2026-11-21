@@ -5,6 +5,7 @@ import dao.DeliveryAgentDAO;
 import dao.OrderDAO;
 import model.Client;
 import model.DeliveryAgent;
+import model.Email;
 import model.Order;
 import service.DeliveryNotifier;
 import service.DispatchNotifier;
@@ -37,10 +38,15 @@ public class AssignDeliveryPanel extends JPanel {
             new JComboBox<>(new String[]{Order.ASSIGNED, Order.DISPATCHED, Order.DELIVERED});
     private final JCheckBox chkEmailAgent = new JCheckBox("Email agent on assign", true);
     private final JCheckBox chkEmailClient = new JCheckBox("Email client on dispatch", true);
+    private final ActivityLogPanel activityLog = new ActivityLogPanel(emailService.getAll());
 
     public AssignDeliveryPanel() {
         JPanel content = new JPanel(new BorderLayout(Theme.GAP, 0));
-        content.add(Theme.table(table, 76, 129, 90, 69, 82, 99), BorderLayout.CENTER);
+        JPanel left = new JPanel(new BorderLayout(0, 10));
+        left.setOpaque(false);
+        left.add(Theme.table(table, 76, 129, 90, 69, 82, 99), BorderLayout.CENTER);
+        left.add(activityLog, BorderLayout.SOUTH);
+        content.add(left, BorderLayout.CENTER);
         content.add(buildForm(), BorderLayout.EAST);
         setLayout(new BorderLayout());
         add(Theme.screen("Delivery Scheduling", "Task 6 · triggers emails (Tasks 8 & 9)",
@@ -105,8 +111,10 @@ public class AssignDeliveryPanel extends JPanel {
 
         order.assign(agent.getId(), date);
         orders.save();
-        String emailNote = chkEmailAgent.isSelected() ? sendAgentEmail(order, agent) : "";
-        refreshAndReselect(order, emailNote);
+        refreshAndReselect();
+        String action = order.getCode() + " assigned to " + agent.getName() + " for " + date;
+        if (chkEmailAgent.isSelected()) sendAgentEmail(order, agent, action);
+        else logWithoutEmail(order, action);
     }
 
     private void updateStatus() {
@@ -118,39 +126,63 @@ public class AssignDeliveryPanel extends JPanel {
 
         order.setStatus(newStatus);
         orders.save();
+        refreshAndReselect();
         boolean emailClient = Order.DISPATCHED.equals(newStatus) && chkEmailClient.isSelected();
-        refreshAndReselect(order, emailClient ? sendClientEmail(order) : "");
+        String action = order.getCode() + " marked " + newStatus;
+        if (emailClient) sendClientEmail(order, action);
+        else logWithoutEmail(order, action);
     }
 
-    private String sendAgentEmail(Order order, DeliveryAgent agent) {
+    private void sendAgentEmail(Order order, DeliveryAgent agent, String action) {
         Client client = clients.findById(order.getClientId());
-        if (client == null) return "\nNo email sent: the client no longer exists.";
+        if (client == null) { emailFailed(order, action, "the client no longer exists"); return; }
         try {
-            agentNotifier.notifyAgent(agent, client, order);
-            return "\nEmail sent to " + agent.getEmail() + ".";
+            Email email = agentNotifier.notifyAgent(agent, client, order);
+            emailSent(order, action, email, "Email sent to delivery agent", "Task 9");
         } catch (RuntimeException e) {
-            return "\nEmail to agent failed: " + e.getMessage();
+            emailFailed(order, action, e.getMessage());
         }
     }
 
-    private String sendClientEmail(Order order) {
+    private void sendClientEmail(Order order, String action) {
         Client client = clients.findById(order.getClientId());
         DeliveryAgent agent = agents.findById(order.getAgentId());
-        if (client == null || agent == null) return "\nNo email sent: the client or agent no longer exists.";
+        if (client == null || agent == null) { emailFailed(order, action, "the client or agent no longer exists"); return; }
         try {
-            clientNotifier.notifyClient(client, agent, order);
-            return "\nEmail sent to " + client.getEmail() + ".";
+            Email email = clientNotifier.notifyClient(client, agent, order);
+            emailSent(order, action, email, "Email sent to client", "Task 8");
         } catch (RuntimeException e) {
-            return "\nEmail to client failed: " + e.getMessage();
+            emailFailed(order, action, e.getMessage());
         }
     }
 
-    private void refreshAndReselect(Order order, String emailNote) {
+    private void emailSent(Order order, String action, Email email, String title, String task) {
+        activityLog.addEmailSent(action, email);
+        new EmailSentDialog(this, title, task, savedText(order), email).setVisible(true);
+    }
+
+    private void emailFailed(Order order, String action, String reason) {
+        activityLog.addEmailFailed(action, reason);
+        showSaved(order, "\nNo email sent: " + reason + ".");
+    }
+
+    private void logWithoutEmail(Order order, String action) {
+        activityLog.addAction(action);
+        showSaved(order, "");
+    }
+
+    private void refreshAndReselect() {
         int row = table.getSelectedRow();
         refreshTable();
         table.setRowSelectionInterval(row, row);
-        JOptionPane.showMessageDialog(this, order.getCode() + " is now " + order.getStatus() + "." + emailNote,
-                "Saved", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void showSaved(Order order, String emailNote) {
+        JOptionPane.showMessageDialog(this, savedText(order) + emailNote, "Saved", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private static String savedText(Order order) {
+        return order.getCode() + " is now " + order.getStatus() + ".";
     }
 
     private void fillFormFromSelection() {
