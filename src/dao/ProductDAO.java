@@ -121,11 +121,11 @@ public class ProductDAO {
                 int eco = Integer.parseInt(parts[4]);
                 String details = parts[5];
 
-                if (category.equals("Plant")) {
+                if (category.equalsIgnoreCase("Plant")) {
                     products.add(new Plant(id, name, price, eco, details));
-                } else if (category.equals("Planter")) {
+                } else if (category.equalsIgnoreCase("Planter")) {
                     products.add(new Planter(id, name, price, eco, details));
-                } else if (category.equals("Gardening Kit")) {
+                } else if (category.equalsIgnoreCase("Gardening Kit")) {
                     products.add(new GardeningKit(id, name, price, eco, Integer.parseInt(details)));
                 }
             }
